@@ -7,7 +7,7 @@ This is an event management microservice developed by Colin Sonnenberg for CS 36
 ## Data storage syntax
 
 Data is stored in a text file located within the repo.  Here is an example of what stored data could look like:
-
+'''
 [
     {
       "app_id": "forrest",
@@ -33,6 +33,7 @@ Data is stored in a text file located within the repo.  Here is an example of wh
       }
     }
 ]
+'''
 
 ## Getting started
 
