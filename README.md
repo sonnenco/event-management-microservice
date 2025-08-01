@@ -7,7 +7,7 @@ This is an event management microservice developed by Colin Sonnenberg for CS 36
 ## Data storage syntax
 
 Data is stored in a text file located within the repo.  Here is an example of what stored data could look like:
-'''
+
 [
     {
       "app_id": "forrest",
@@ -33,7 +33,6 @@ Data is stored in a text file located within the repo.  Here is an example of wh
       }
     }
 ]
-'''
 
 ## Getting started
 
@@ -49,18 +48,18 @@ You will need to establish a socket connection to this from your main program al
 
 ### Create
 
-| Key | Required or optional |
-| --- | --- |
-| operation | required |
-| app_id | required|
-| event | required |
-| title | required |
-| timestamp | required |
-| frequency | required |
-| data | required |
-| amount | optional |
-| currency | optional |
-| location | optional |
+|Key|Required or optional|
+|---|---|
+|operation|required|
+|app_id|required|
+|event|required|
+|title|required|
+|timestamp|required|
+|frequency|required|
+|data|required|
+|amount|optional|
+|currency|optional|
+|location|optional|
 
 message = {
     "operation": "create",
@@ -78,10 +77,10 @@ message = {
 
 ### Read all
 
-| Key | Required or optional |
-| --- | --- |
-| operation | required |
-| app_id | required|
+|Key|Required or optional|
+|---|---|
+|operation|required|
+|app_id|required|
 
 message = {
     "operation": "read",
@@ -90,12 +89,12 @@ message = {
 
 ### Read specific
 
-| Key | Required or optional |
-| --- | --- |
-| operation | required |
-| app_id | required|
-| event | required |
-| title | required |
+|Key|Required or optional|
+|---|---|
+|operation|required|
+|app_id|required|
+|event|required|
+|title|required|
 
 message = {
     "operation": "read",
@@ -107,18 +106,18 @@ message = {
 
 ### Update specific (several example depending on attribute attempting to update)
 
-| Key | Required or optional |
-| --- | --- |
-| operation | required |
-| app_id | required|
-| event | required |
-| title | required |
-| timestamp | optional |
-| frequency | optional |
-| data | required only if providing amount, currency, or location update |
-| amount | optional |
-| currency | optional |
-| location | optional |
+|Key|Required or optional|
+|---|---|
+|operation|required|
+|app_id|required|
+|event|required|
+|title|required|
+|timestamp|optional|
+|frequency|optional|
+|data|required only if providing amount, currency, or location update|
+|amount|optional|
+|currency|optional|
+|location|optional|
 
 message = {
     "operation": "update",
@@ -173,12 +172,12 @@ message = {
 
 ### Delete
 
-| Key | Required or optional |
-| --- | --- |
-| operation | required |
-| app_id | required|
-| event | required |
-| title | required |
+|Key|Required or optional|
+|---|---|
+|operation|required|
+|app_id|required|
+|event|required|
+|title|required|
 
 message = {
     "operation": "delete",
