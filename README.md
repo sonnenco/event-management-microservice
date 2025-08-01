@@ -202,4 +202,5 @@ But again, your chosen language will use its [own syntax per the ZeroMQ document
 
 ## UML sequence diagram
 
-Coming soon...
+<img width="1637" height="640" alt="image" src="https://github.com/user-attachments/assets/e2da862d-e149-4051-84c2-65a51fcf418a" />
+
