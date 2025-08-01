@@ -147,7 +147,6 @@ def updateEvent(appId, title, data):
     errors = []
 
     # Attempt to open and read from the text file
-    print("REMOVE: Opening text file")
     try:
         with open("event-storage.txt", "r") as storageFile:
             allEvents = json.load(storageFile)
@@ -157,7 +156,6 @@ def updateEvent(appId, title, data):
         return errors
 
     # Find the event object which matches the appId and title params
-    print("REMOVE: Finding event object to update")
     event, eventIndex = None, None
     try:
         for index, eventObject in enumerate(allEvents):
@@ -170,14 +168,13 @@ def updateEvent(appId, title, data):
         errors.append(f"def updateEvent(): Error decoding the JSON object: {error}")
     
     if not event and not eventIndex:
-        errors.append("No event exists for that 'app_id' and 'title'.")
+        errors.append("No event exists to update with that 'app_id' and 'title'.")
         return errors
 
     eventNew = data.get("event") # represents the child keys/values of the 'event' key to be updated (if any)
     dataNew = eventNew.get("data") # represents the child keys/values of the 'data' key to be updated (if any)
 
     # Check if event keys were provided to update and perform the update
-    print("REMOVE: Updating event values (if any)")
     if eventNew:
         for eventKey in eventNew:
             if eventKey != "data" and eventKey != "title":
@@ -187,7 +184,6 @@ def updateEvent(appId, title, data):
                     errors.append(f"Invalid updates requested for the event object.  Allowed keys are 'timestamp', 'frequency'.  You provided: '{eventKey}'")
 
     # Check if data keys were provided to update and perform the update
-    print("REMOVE: Updating data values (if any)")
     if dataNew:
         for dataKey in dataNew:
             if dataKey == "amount" or dataKey == "currency" or dataKey == "location":
@@ -196,7 +192,6 @@ def updateEvent(appId, title, data):
                 errors.append(f"Invalid update request for the data in the event object.  Allowed 'data' keys are 'amount', 'currency' or 'location'.  You provided: '{dataKey}'")
 
     # Write the updated object to the text file
-    print("REMOVE: Trying to place the updated event object in the text file")
     allEvents[eventIndex] = event
     try:
         with open("event-storage.txt", "w") as storageFile:
@@ -217,6 +212,64 @@ def updateEvent(appId, title, data):
     else:
         socket.send_string(f"Update request was executed successfully!")
         print("Update request was executed successfully!")
+
+def deleteEvent(appId, title):
+    """
+    Delete and event which matches the request payload
+
+    :appId: String representing the application to delete an event for
+    :title: String representing the title of the event to delete
+    :return: List specifying errors encountered during data validation (return only executes if errors exist, otherwise nothing returned)
+    """
+
+    print("Running def deleteEvent()...")
+    errors = []
+
+    # Attempt to open and read from the text file
+    try:
+        with open("event-storage.txt", "r") as storageFile:
+            allEvents = json.load(storageFile)
+    except IOError as error:
+        print(f"def deleteEvent(): Error reading the text file: {error}")
+        errors.append(f"def deleteEvent(): Error reading the text file: {error}")
+        return errors
+
+    # Attempt to find the event object which matches the appId and title params and delete it
+    originalLength = len(allEvents) - 1
+    try:
+        for index, eventObject in enumerate(allEvents):
+            eventValues = eventObject.get("event")
+            if eventObject.get("app_id") == appId and eventValues.get("title") == title:
+                allEvents.pop(index)
+    except json.JSONDecodeError as error:
+        print(f"def updateEvent(): Error decoding the JSON object: {error}")
+        errors.append(f"def updateEvent(): Error decoding the JSON object: {error}")
+
+    # Check whether anything was deleted
+    if len(allEvents) - 1 == originalLength:
+        errors.append("No event exists to delete with that 'app_id' and 'title'.")
+        return errors
+
+    # Write the updated object to the text file
+    try:
+        with open("event-storage.txt", "w") as storageFile:
+            json.dump(allEvents, storageFile, indent=2)
+    except IOError as error:
+        print(f"def deleteEvent(): Error writing to the text file: {error}")
+        errors.append(f"def deleteEvent(): Error writing to the text file: {error}")
+        return errors
+
+    # If errors exist, send the errors back over the socket to close out the request
+    if errors:
+        print("Update request errors:")
+        for error in errors:
+            print(error)
+        socket.send_string(f"Errors: '{errors}'")
+    
+    # If errors do not exist, send success confirmation back over the socket to close out the request
+    else:
+        socket.send_string(f"Delete request was executed successfully!")
+        print("Delete request was executed successfully!")
 
 def minimumDataValidation(data):
     """
@@ -332,7 +385,23 @@ def processRequest(data):
                 if errors: return errors
 
     # Handle delete requests
+    elif requestType == "delete":
 
+        # Check that 'event' is present
+        if "event" not in data:
+            errors.append("Missing 'event' key.")
+            return errors
+        else:
+            # Check that 'title' is present
+            event = data.get("event")
+            if "title" not in event:
+                errors.append("Missing 'title' key.")
+                return errors
+
+            if not errors:
+                title = event.get("title")
+                errors = deleteEvent(app, title)
+                if errors: return errors
 
 def runServer():
     """

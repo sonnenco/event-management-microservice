@@ -1,5 +1,6 @@
 import zmq
 import json
+import time
 
 context = zmq.Context()
 
@@ -8,7 +9,7 @@ socket = context.socket(zmq.REQ)
 socket.connect("tcp://localhost:40699")
 
 ##########################################################
-# Test valid CRUD operations #
+# Test valid CRUD operations                             #
 print("Test valid CRUD operations")
 ##########################################################
 
@@ -27,12 +28,13 @@ message = {
     }
 }
 
-##########################################################
-
 print("\nCreate event for Forrest:")
 socket.send_string(json.dumps(message))
 reply = socket.recv()
+time.sleep(2)
 print(f"Received reply: {reply}")
+
+##########################################################
 
 # Create event for Artur
 message = {
@@ -48,12 +50,13 @@ message = {
     }
 }
 
-##########################################################
-
 print("\nCreate event for Artur:")
 socket.send_string(json.dumps(message))
 reply= socket.recv()
+time.sleep(2)
 print(f"Received reply: {reply}")
+
+##########################################################
 
 # Read all Forrest events
 message = {
@@ -64,6 +67,7 @@ message = {
 print("\nRead all Forrest events:")
 socket.send_string(json.dumps(message))
 reply= socket.recv()
+time.sleep(2)
 print(f"Received reply: {reply}")
 
 ##########################################################
@@ -77,6 +81,7 @@ message = {
 print("\nRead all Artur events:")
 socket.send_string(json.dumps(message))
 reply= socket.recv()
+time.sleep(2)
 print(f"Received reply: {reply}")
 
 ##########################################################
@@ -93,6 +98,7 @@ message = {
 print("\nRead specific Artur event which exists:")
 socket.send_string(json.dumps(message))
 reply= socket.recv()
+time.sleep(2)
 print(f"Received reply: {reply}")
 
 ##########################################################
@@ -109,6 +115,7 @@ message = {
 print("\nRead specific Forrest event which exists:")
 socket.send_string(json.dumps(message))
 reply= socket.recv()
+time.sleep(2)
 print(f"Received reply: {reply}")
 
 ##########################################################
@@ -126,6 +133,7 @@ message = {
 print("\nUpdate specific Forrest event which exists (timestamp):")
 socket.send_string(json.dumps(message))
 reply= socket.recv()
+time.sleep(2)
 print(f"Received reply: {reply}")
 
 ##########################################################
@@ -143,6 +151,7 @@ message = {
 print("\nUpdate specific Forrest event which exists (frequency):")
 socket.send_string(json.dumps(message))
 reply= socket.recv()
+time.sleep(2)
 print(f"Received reply: {reply}")
 
 ##########################################################
@@ -162,6 +171,7 @@ message = {
 print("\nUpdate specific Forrest event which exists (data - amount):")
 socket.send_string(json.dumps(message))
 reply= socket.recv()
+time.sleep(2)
 print(f"Received reply: {reply}")
 
 ##########################################################
@@ -181,6 +191,7 @@ message = {
 print("\nUpdate specific Forrest event which exists (data - currency):")
 socket.send_string(json.dumps(message))
 reply= socket.recv()
+time.sleep(2)
 print(f"Received reply: {reply}")
 
 ##########################################################
@@ -200,10 +211,49 @@ message = {
 print("\nUpdate specific Artur event which exists (data - location):")
 socket.send_string(json.dumps(message))
 reply= socket.recv()
+time.sleep(2)
 print(f"Received reply: {reply}")
 
 ##########################################################
-# Test edge cases for invalid requests #
+
+# Delete specific Forrest event which exists
+message = {
+    "operation": "delete",
+    "app_id": "forrest",
+    "event": {
+        "title": "Netflix",
+    }
+}
+
+print("\nDelete specific Forrest event which exists:")
+socket.send_string(json.dumps(message))
+reply= socket.recv()
+time.sleep(2)
+print(f"Received reply: {reply}")
+
+##########################################################
+
+# Delete specific Artur event which exists
+message = {
+    "operation": "delete",
+    "app_id": "artur",
+    "event": {
+        "title": "Math 110 Final Exam",
+    }
+}
+
+print("\nDelete specific Artur event which exists:")
+socket.send_string(json.dumps(message))
+reply= socket.recv()
+time.sleep(2)
+print(f"Received reply: {reply}")
+
+
+
+'''
+##########################################################
+# Test cases for invalid requests                        #
+# Remove tests from multi-line comment as needed         #
 print("Test edge cases for invalid requests")
 ##########################################################
 
@@ -431,3 +481,36 @@ print("\nUpdate specific Artur event which does not exist:")
 socket.send_string(json.dumps(message))
 reply= socket.recv()
 print(f"Received reply: {reply}")
+
+##########################################################
+
+# Delete specific Forrest event which does not exist
+message = {
+    "operation": "delete",
+    "app_id": "forrest",
+    "event": {
+        "title": "this totally doesn't exist!"
+    }
+}
+
+print("\nDelete specific Forrest event which does not exist:")
+socket.send_string(json.dumps(message))
+reply= socket.recv()
+print(f"Received reply: {reply}")
+
+##########################################################
+
+# Delete specific Artur event which does not exist
+message = {
+    "operation": "delete",
+    "app_id": "artur",
+    "event": {
+        "title": "this also defintely doesn't exist!"
+    }
+}
+
+print("\nDelete specific Artur event which does not exist:")
+socket.send_string(json.dumps(message))
+reply= socket.recv()
+print(f"Received reply: {reply}")
+'''
