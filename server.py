@@ -96,10 +96,10 @@ def readSpecificEvent(appId, title):
 
     :appId: String representing the application which is asking to read events
     :title: String representing the title of the event to return
-    :return: List specifying errors encountered during data valiation (return only executes if errors exist, otherwise nothing returned)
+    :return: List specifying errors encountered during data validation (return only executes if errors exist, otherwise nothing returned)
     """
 
-    print("Running def readAllEvent()...")
+    print("Running def readSpecificEvent()...")
     errors = []
 
     # Attempt to open and read from the text file
@@ -134,6 +134,90 @@ def readSpecificEvent(appId, title):
         socket.send_string(json.dumps(filteredEvents))
         print("Read specific request was executed successfully!")
 
+def updateEvent(appId, title, data):
+    """
+    Update the event which matches the request payload
+
+    :appId: String representing the application to update an event for
+    :title: String representing the title of the event to update
+    :return: List specifying errors encountered during data validation (return only executes if errors exist, otherwise nothing returned)
+    """
+
+    print("Running def updateEvent()...")
+    errors = []
+
+    # Attempt to open and read from the text file
+    print("REMOVE: Opening text file")
+    try:
+        with open("event-storage.txt", "r") as storageFile:
+            allEvents = json.load(storageFile)
+    except IOError as error:
+        print(f"def updateEvent(): Error reading the text file: {error}")
+        errors.append(f"def updateEvent(): Error reading the text file: {error}")
+        return errors
+
+    # Find the event object which matches the appId and title params
+    print("REMOVE: Finding event object to update")
+    event, eventIndex = None, None
+    try:
+        for index, eventObject in enumerate(allEvents):
+            eventValues = eventObject.get("event")
+            if eventObject.get("app_id") == appId and eventValues.get("title") == title:
+                event = eventObject
+                eventIndex = index
+    except json.JSONDecodeError as error:
+        print(f"def updateEvent(): Error decoding the JSON object: {error}")
+        errors.append(f"def updateEvent(): Error decoding the JSON object: {error}")
+    
+    if not event and not eventIndex:
+        errors.append("No event exists for that 'app_id' and 'title'.")
+        return errors
+
+    eventNew = data.get("event") # represents the child keys/values of the 'event' key to be updated (if any)
+    dataNew = eventNew.get("data") # represents the child keys/values of the 'data' key to be updated (if any)
+
+    # Check if event keys were provided to update and perform the update
+    print("REMOVE: Updating event values (if any)")
+    if eventNew:
+        for eventKey in eventNew:
+            if eventKey != "data" and eventKey != "title":
+                if eventKey == "timestamp" or eventKey == "frequency":
+                    event["event"][eventKey] = eventNew.get(eventKey)
+                else:
+                    errors.append(f"Invalid updates requested for the event object.  Allowed keys are 'timestamp', 'frequency'.  You provided: '{eventKey}'")
+
+    # Check if data keys were provided to update and perform the update
+    print("REMOVE: Updating data values (if any)")
+    if dataNew:
+        for dataKey in dataNew:
+            if dataKey == "amount" or dataKey == "currency" or dataKey == "location":
+                event["event"]["data"][dataKey] = dataNew.get(dataKey)
+            else:
+                errors.append(f"Invalid update request for the data in the event object.  Allowed 'data' keys are 'amount', 'currency' or 'location'.  You provided: '{dataKey}'")
+
+    # Write the updated object to the text file
+    print("REMOVE: Trying to place the updated event object in the text file")
+    allEvents[eventIndex] = event
+    try:
+        with open("event-storage.txt", "w") as storageFile:
+            json.dump(allEvents, storageFile, indent=2)
+    except IOError as error:
+        print(f"def updateEvent(): Error writing to the text file: {error}")
+        errors.append(f"def updateEvent(): Error writing to the text file: {error}")
+        return errors
+
+    # If errors exist, send the errors back over the socket to close out the request
+    if errors:
+        print("Update request errors:")
+        for error in errors:
+            print(error)
+        socket.send_string(f"Errors: '{errors}'")
+    
+    # If errors do not exist, send success confirmation back over the socket to close out the request
+    else:
+        socket.send_string(f"Update request was executed successfully!")
+        print("Update request was executed successfully!")
+
 def minimumDataValidation(data):
     """
     Validate that the minimum required keys ("operation" and "app_id) are present in the data.
@@ -165,6 +249,7 @@ def processRequest(data):
     print("Running def processRequest()...")
     errors = []
     requestType = data.get("operation")
+    app = data.get("app_id")
 
     # Handle "create" requests
     if requestType == "create":        
@@ -208,8 +293,7 @@ def processRequest(data):
             
     # Handle "read" requests
     elif requestType == "read":
-        app = data.get("app_id")
-
+        
         # Indicates a read all request
         if "event" not in data:
             errors = readAllEvent(app)
@@ -217,10 +301,37 @@ def processRequest(data):
         
         # Indicates a read specific request
         else:
+            # Check that 'title' is present
             event = data.get("event")
-            title = event.get("title")
-            errors = readSpecificEvent(app, title)
-            if errors: return errors
+            if "title" not in event:
+                errors.append("Missing 'title' key.")
+                return errors
+            
+            if not errors:
+                title = event.get("title")
+                errors = readSpecificEvent(app, title)
+                if errors: return errors
+
+    # Handle update requests
+    elif requestType == "update":
+        
+        # Check that 'event' is present
+        if "event" not in data:
+            errors.append("Missing 'event' key.")
+            return errors
+        else:
+            # Check that 'title' is present
+            event = data.get("event")
+            if "title" not in event:
+                errors.append("Missing 'title' key.")
+                return errors
+
+            if not errors:
+                title = event.get("title")
+                errors = updateEvent(app, title, data)
+                if errors: return errors
+
+    # Handle delete requests
 
 
 def runServer():
